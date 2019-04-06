@@ -23,7 +23,7 @@ final class Version20190406122459 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('CREATE TABLE region (id INT AUTO_INCREMENT NOT NULL, travel_to VARCHAR(255) NOT NULL, travel_back VARCHAR(255) NOT NULL, time_zone VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE region (id INT AUTO_INCREMENT NOT NULL, travel_to INT(11) NOT NULL, travel_back INT(11) NOT NULL, time_zone VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE courier (id INT AUTO_INCREMENT NOT NULL, name LONGTEXT NOT NULL, surname LONGTEXT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE schedule (id INT AUTO_INCREMENT NOT NULL, region_id INT NOT NULL, courier_id INT NOT NULL, dispatch_time DATETIME NOT NULL, arrival_time DATETIME NOT NULL, INDEX IDX_5A3811FBC7209D4F (region_id), INDEX IDX_5A3811FBCCC02335 (courier_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('ALTER TABLE schedule ADD CONSTRAINT FK_5A3811FBC7209D4F FOREIGN KEY (region_id) REFERENCES region (id)');

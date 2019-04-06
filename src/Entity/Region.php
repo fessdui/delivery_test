@@ -17,12 +17,12 @@ class Region
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="integer")
      */
     private $travel_to;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="integer")
      */
     private $travel_back;
 
@@ -31,12 +31,17 @@ class Region
      */
     private $time_zone;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $name;
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTravelTo(): ?string
+    public function getTravelTo(): ?int
     {
         return $this->travel_to;
     }
@@ -48,7 +53,7 @@ class Region
         return $this;
     }
 
-    public function getTravelBack(): ?string
+    public function getTravelBack(): ?int
     {
         return $this->travel_back;
     }
@@ -68,6 +73,18 @@ class Region
     public function setTimeZone(string $timeZone): self
     {
         $this->time_zone = $timeZone;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }
