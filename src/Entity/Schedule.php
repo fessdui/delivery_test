@@ -17,18 +17,6 @@ class Schedule
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Region")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $region_id;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Courier")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $courier_id;
-
-    /**
      * @ORM\Column(type="datetime")
      */
     private $dispatch_time;
@@ -38,35 +26,38 @@ class Schedule
      */
     private $arrival_time;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $estimated_time_come_back;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $estimated_time_stay_to;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Region", inversedBy="schedules")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $region;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Courier", inversedBy="schedules")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $courier;
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getRegionId(): ?Region
-    {
-        return $this->region_id;
-    }
-
-    public function setRegionId(?Region $regionId): self
-    {
-        $this->region_id = $regionId;
-
-        return $this;
-    }
-
-    public function getCourierId(): ?Courier
-    {
-        return $this->courier_id;
-    }
-
-    public function setCourierId(?Courier $courierId): self
-    {
-        $this->courier_id = $courierId;
-
-        return $this;
-    }
-
+    /**
+     * Получить время отправки из домашнего региона.
+     *
+     * @return \DateTimeInterface|null
+     */
     public function getDispatchTime(): ?\DateTimeInterface
     {
         return $this->dispatch_time;
@@ -79,6 +70,11 @@ class Schedule
         return $this;
     }
 
+    /**
+     * Получить расчитанное время прибытия в регион
+     *
+     * @return \DateTimeInterface|null
+     */
     public function getArrivalTime(): ?\DateTimeInterface
     {
         return $this->arrival_time;
@@ -87,6 +83,64 @@ class Schedule
     public function setArrivalTime(\DateTimeInterface $arrivalTime): self
     {
         $this->arrival_time = $arrivalTime;
+
+        return $this;
+    }
+
+    /**
+     * Получить оценочное время возвращения в домашний регион.
+     *
+     * @return \DateTimeInterface|null
+     */
+    public function getEstimatedTimeComeBack(): ?\DateTimeInterface
+    {
+        return $this->estimated_time_come_back;
+    }
+
+    public function setEstimatedTimeComeBack(\DateTimeInterface $estimated_time_come_back): self
+    {
+        $this->estimated_time_come_back = $estimated_time_come_back;
+
+        return $this;
+    }
+
+    /**
+     * Возвращает дату до которого курьер пребывает в регионе.
+     *
+     * @return \DateTimeInterface|null
+     */
+    public function getEstimatedTimeStayTo(): ?\DateTimeInterface
+    {
+        return $this->estimated_time_stay_to;
+    }
+
+    public function setEstimatedTimeStayTo(\DateTimeInterface $estimated_time_stay_to): self
+    {
+        $this->estimated_time_stay_to = $estimated_time_stay_to;
+
+        return $this;
+    }
+
+    public function getRegion(): ?Region
+    {
+        return $this->region;
+    }
+
+    public function setRegion(?Region $region): self
+    {
+        $this->region = $region;
+
+        return $this;
+    }
+
+    public function getCourier(): ?Courier
+    {
+        return $this->courier;
+    }
+
+    public function setCourier(?Courier $courier): self
+    {
+        $this->courier = $courier;
 
         return $this;
     }

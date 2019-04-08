@@ -1,5 +1,30 @@
 {% extends "base.html.twig" %}
 
 {% block content %}
-    <h1>This is the {{ page_ame }} page</h1>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Фамилия</th>
+            <th scope="col">Дата выезда</th>
+            <th scope="col">Дата приезда в регион</th>
+            <th scope="col">Дата возвращения</th>
+            <th scope="col">Регион</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, schedule in schedules %}
+            <tr>
+                <th scope="row">{{ schedule.id }}</th>
+                <td>{{ schedule.courier.name }}</td>
+                <td>{{ schedule.courier.surname }}</td>
+                <td>{{ schedule.dispatchTime|date('Y-m-d H:i:s') }}</td>
+                <td>{{ schedule.arrivalTime|date('Y-m-d H:i:s') }}</td>
+                <td>{{ schedule.estimatedTimeComeBack|date('Y-m-d H:i:s') }}</td>
+                <td>{{ schedule.region.name }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

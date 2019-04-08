@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Courier;
+use App\Entity\Region;
+use App\Entity\Schedule;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -19,32 +21,34 @@ class CourierRepository extends ServiceEntityRepository
         parent::__construct($registry, Courier::class);
     }
 
-    // /**
-    //  * @return Courier[] Returns an array of Courier objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+    /**
+     * Возвращает свободных курьеров на дату.
+     * Если курьер с собой имеет необходимый товар и регион тот же где он уже находится,
+     * то мы не учитываем время на возвращение за ним и считаем его свободным.
+     *
+     * @param Region $region
+     * @param \DateTime $date
+     * @param bool $hasNeededProduct
+     * @return mixed[]
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getFreeCourier(Region $region, \DateTime $date,  $hasNeededProduct = false){
+        $params['search_date'] = $date->format('Y-m-d H:i:s');
 
-    /*
-    public function findOneBySomeField($value): ?Courier
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        $sql = 'SELECT courier.id, courier.name, courier.surname FROM courier LEFT JOIN schedule on schedule.`courier_id` = courier.id 
+WHERE  schedule.`estimated_time_come_back` < :search_date OR  schedule.`estimated_time_come_back` IS NULL';
+        if ($hasNeededProduct) {
+            $sql = 'SELECT courier.id, courier.name, courier.surname FROM courier LEFT JOIN schedule on schedule.`courier_id` = courier.id 
+WHERE schedule.`region_id` IS NULL OR schedule.`region_id` = :region_id AND schedule.`estimated_time_come_back` < :search_date  OR 
+schedule.`estimated_time_come_back` IS NULL ';
+            $params['region_id'] = $region->getId();
+        }
+
+        $em = $this->getEntityManager();
+        $stmt = $em->getConnection()->prepare($sql);
+        $stmt->execute($params);
+        $couriers = $stmt->fetchAll();
+
+        return $couriers;
     }
-    */
 }

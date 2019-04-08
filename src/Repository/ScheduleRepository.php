@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Region;
 use App\Entity\Schedule;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -19,32 +20,58 @@ class ScheduleRepository extends ServiceEntityRepository
         parent::__construct($registry, Schedule::class);
     }
 
-    // /**
-    //  * @return Schedule[] Returns an array of Schedule objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * Возвращает время прибытия в регион.
+     * Время возвращается в часовом поясе региона пребытия.
+     *
+     * @param $date
+     * @param Region $region
+     * @return \DateTime
+     * @throws \Exception
+     */
+    public function getEstimatedTimeArrival($date, Region $region)
     {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $dateTime = new \DateTime($date, new \DateTimeZone($region->getTimeZone()));
+        $dateTime->add(new \DateInterval('PT' . $region->getTravelTo() . 'H'));
 
-    /*
-    public function findOneBySomeField($value): ?Schedule
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        return $dateTime;
     }
-    */
+
+    /**
+     * Возвращает время до которого курьер будет в регионе.
+     *
+     * @param $date
+     * @param Region $region
+     * @param int $tripDuration
+     * @return \DateTime
+     * @throws \Exception
+     */
+    public function getEstimatedTimeInRegion($date, Region $region, int $tripDuration)
+    {
+        $dateTime = $this->getEstimatedTimeArrival($date, $region);
+        /** Добавляем время пребывания в регионе */
+        $dateTime->add(new \DateInterval('PT' . $tripDuration . 'H'));
+
+        return $dateTime;
+    }
+
+    /**
+     * Возвращает время когда курьер должен вернуться в домашний регион.
+     * Часовой пояс домашнего региона.
+     *
+     * @param $date
+     * @param Region $region
+     * @param int $tripDuration
+     * @return \DateTime
+     * @throws \Exception
+     */
+    public function getEstimatedTimeReturning($date, Region $region, int $tripDuration)
+    {
+        $dateTime = $this->getEstimatedTimeInRegion($date, $region, $tripDuration);
+        $dateTime->add(new \DateInterval('PT' . $region->getTravelBack() . 'H'));
+        /* @todo перенести GMT+3 в конфиг. Если будет время.  */
+        $dateTime->setTimezone(new \DateTimeZone('GMT+3'));
+
+        return $dateTime;
+    }
 }

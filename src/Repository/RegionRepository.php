@@ -9,7 +9,6 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 /**
  * @method Region|null find($id, $lockMode = null, $lockVersion = null)
  * @method Region|null findOneBy(array $criteria, array $orderBy = null)
- * @method Region[]    findAll()
  * @method Region[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class RegionRepository extends ServiceEntityRepository
@@ -19,32 +18,11 @@ class RegionRepository extends ServiceEntityRepository
         parent::__construct($registry, Region::class);
     }
 
-    // /**
-    //  * @return Region[] Returns an array of Region objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @return Region[]|array
+     */
+    public function findAll()
     {
-        return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('r.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        return $this->findBy(array(), array('name' => 'ASC'));
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Region
-    {
-        return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

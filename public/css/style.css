@@ -1,0 +1,10 @@
+.form-create {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.info {
+    color: orange;
+    padding: 15px;
+    display: none;
+}
