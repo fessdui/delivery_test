@@ -48,7 +48,12 @@ class Schedule
      */
     private $courier;
 
-    public function getId(): ?int
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_сarries_product;
+
+        public function getId(): ?int
     {
         return $this->id;
     }
@@ -141,6 +146,18 @@ class Schedule
     public function setCourier(?Courier $courier): self
     {
         $this->courier = $courier;
+
+        return $this;
+    }
+
+    public function getIsсarriesProduct(): ?bool
+    {
+        return $this->is_сarries_product;
+    }
+
+    public function setIsсarriesProduct(?bool $is_сarries_product): self
+    {
+        $this->is_сarries_product = $is_сarries_product;
 
         return $this;
     }

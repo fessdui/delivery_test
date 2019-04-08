@@ -35,12 +35,32 @@ class CourierRepository extends ServiceEntityRepository
     public function getFreeCourier(Region $region, \DateTime $date,  $hasNeededProduct = false){
         $params['search_date'] = $date->format('Y-m-d H:i:s');
 
-        $sql = 'SELECT courier.id, courier.name, courier.surname FROM courier LEFT JOIN schedule on schedule.`courier_id` = courier.id 
-WHERE  schedule.`estimated_time_come_back` < :search_date OR  schedule.`estimated_time_come_back` IS NULL';
+        $sql = <<<EOT
+SELECT DISTINCT courier.id, courier.name, courier.surname
+FROM courier
+LEFT JOIN schedule on schedule.`courier_id` = courier.id 
+WHERE courier.id IN (
+	SELECT `courier`.id
+    FROM schedule s
+    INNER JOIN `courier` on `courier`.`id` = `s`.`courier_id`
+    GROUP BY `courier`.`id`
+    HAVING max(s.`estimated_time_come_back`) < :search_date
+) OR schedule.`estimated_time_come_back` IS NULL
+EOT;
         if ($hasNeededProduct) {
-            $sql = 'SELECT courier.id, courier.name, courier.surname FROM courier LEFT JOIN schedule on schedule.`courier_id` = courier.id 
-WHERE schedule.`region_id` IS NULL OR schedule.`region_id` = :region_id AND schedule.`estimated_time_come_back` < :search_date  OR 
-schedule.`estimated_time_come_back` IS NULL ';
+            $sql = <<<EOT
+SELECT DISTINCT courier.id, courier.name, courier.surname 
+FROM courier
+LEFT JOIN schedule on schedule.`courier_id` = courier.id 
+WHERE courier.id IN (
+    SELECT `courier`.id
+    FROM schedule s
+    INNER JOIN `courier` on `courier`.`id` = `s`.`courier_id`
+    WHERE  s.region_id = :region_id
+    GROUP BY `courier`.`id`
+    HAVING max(s.`estimated_time_stay_to`) < :search_date
+) OR schedule.`estimated_time_stay_to` IS NULL
+EOT;
             $params['region_id'] = $region->getId();
         }
 

@@ -23,16 +23,23 @@ use Symfony\Component\Serializer\Serializer;
 class IndexController extends AbstractController
 {
     /**
-     * @Route("/")
+     * @Route("/", methods={"POST", "GET"})
      * @return Response
+     * @throws \Exception
      */
-    public function getList()
+    public function getList(Request $request)
     {
-        $pageName = 'index';
         /** @var ScheduleRepository $scheduleRepository */
         $scheduleRepository = $this->getDoctrine()
             ->getRepository(Schedule::class);
-        $schedules = $scheduleRepository->findAll();
+        $requestData = $request->request->all();
+        if ($requestData) {
+            $dateTo = new \DateTime($requestData['date_from'], new \DateTimeZone('GMT+3'));
+            $dateFrom = new \DateTime($requestData['date_to'], new \DateTimeZone('GMT+3'));
+            $schedules = $scheduleRepository->getScheduleByRangeDate($dateTo, $dateFrom);
+        } else {
+            $schedules = $scheduleRepository->getCurrentSchedule();
+        }
 
         return $this->render('index.html.twig', [
             'schedules' => $schedules,
@@ -40,7 +47,7 @@ class IndexController extends AbstractController
     }
 
     /**
-     * @Route("/test")
+     * @Route("/create")
      * @throws \Exception
      */
     public function createScheduleForm(){
@@ -65,7 +72,7 @@ class IndexController extends AbstractController
     }
 
     /**
-     * @Route("/checkfreecourier", name="check_free_courier")
+     * @Route("/checkfreecourier", name="check_free_courier", methods={"POST"})
      * @param Request $request
      * @return JsonResponse
      * @throws \Exception
@@ -76,6 +83,7 @@ class IndexController extends AbstractController
             $regionId = $request->request->get('region');
             $dateFromPost = $request->request->get('date');
             $productExist = $request->request->get('product_exist');
+            var_dump($request->request->all());
 
             $date = new \DateTime($dateFromPost, new \DateTimeZone('GMT+3'));
 

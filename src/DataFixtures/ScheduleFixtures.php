@@ -9,21 +9,22 @@ use Doctrine\Common\Persistence\ObjectManager;
 use App\Entity\Region;
 use App\Entity\Courier;
 use App\Entity\Schedule;
+use Doctrine\ORM\EntityManager;
 use Faker\Factory;
 
 
 class ScheduleFixtures extends Fixture
 {
     /**
-     * @var \Doctrine\ORM\EntityManager
+     * @var EntityManager
      */
     protected $em;
 
     /**
      * ScheduleFixtures constructor.
-     * @param \Doctrine\ORM\EntityManager $em
+     * @param EntityManager $em
      */
-    public function __construct(\Doctrine\ORM\EntityManager $em)
+    public function __construct(EntityManager $em)
     {
         $this->em = $em;
     }
@@ -45,21 +46,20 @@ class ScheduleFixtures extends Fixture
         $allRegions = $regionsRepository->findAll();
 
         foreach ($dates as $date) {
+            $isCarries = rand(0, 1);
             $randRegion = $allRegions[array_rand($allRegions)];
             $couriersArray = $courierRepository
-                ->getFreeCourier($randRegion, $date, rand(0,1));
+                ->getFreeCourier($randRegion, $date, $isCarries);
 
             if ($couriersArray) {
                 $courierData =  $couriersArray[array_rand($couriersArray)];
                 $courier = $courierRepository
                     ->find($courierData['id']);
-
-                $result = $scheduleRepository->saveSchedule($randRegion, $date->format('Y-m-d H:i:s'), $courier);
-
-                if ($result) {
-                    echo 'Saved.' . '\n';
-                } else {
-                    echo 'Not saved.' . '\n';
+                try {
+                    $scheduleRepository->saveSchedule($randRegion, $date->format('Y-m-d H:i:s'), $courier, $isCarries);
+                } catch (\Exception $e) {
+                    /** @todo Сюда бы логгер. */
+                    return $e->getMessage();
                 }
             }
         }
@@ -70,7 +70,7 @@ class ScheduleFixtures extends Fixture
      *
      * @param $first
      * @param $last
-     * @param int $step
+     * @param int $step - in hoers
      * @return array
      * @throws \Exception
      */

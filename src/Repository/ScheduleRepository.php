@@ -81,11 +81,12 @@ class ScheduleRepository extends ServiceEntityRepository
      * @param Region $region
      * @param $dateFromPost
      * @param Courier $courier
+     * @param bool $isCarries
      * @return bool
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveSchedule(Region $region, $dateFromPost, Courier $courier) {
+    public function saveSchedule(Region $region, $dateFromPost, Courier $courier, $isCarries = false) {
         $result = false;
         /* @todo Возможно для каждой записи нужно создать поле куда сохранять значение длительности поездки. Пока хардкод */
         $tripDuration = 0;
@@ -105,6 +106,7 @@ class ScheduleRepository extends ServiceEntityRepository
                 ->setDispatchTime($dateDeparture)
                 ->setEstimatedTimeStayTo($timeToInRegion)
                 ->setEstimatedTimeComeBack($estimatedReturnTime)
+                ->setIsсarriesProduct($isCarries)
                 ->setRegion($region);
             $this->getEntityManager()->persist($schedule);
             $this->getEntityManager()->flush();
@@ -113,5 +115,33 @@ class ScheduleRepository extends ServiceEntityRepository
         }
 
         return $result;
+    }
+
+    /**
+     * Возвращает расписание на сегодня.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getCurrentSchedule(){
+        $date = new \DateTime('now', new \DateTimeZone('GMT+3'));
+        return  $this->getEntityManager()
+            ->createQuery("SELECT s FROM App\Entity\Schedule s WHERE s.dispatch_time < :new_date")
+            ->setParameter('new_date', $date)
+            ->getResult();
+    }
+
+    /**
+     * Вовращает список на отрезок времени.
+     *
+     * @param $dateFrom
+     * @param $dateTo
+     * @return mixed
+     */
+    public function getScheduleByRangeDate($dateFrom, $dateTo){
+        return  $this->getEntityManager()
+            ->createQuery("SELECT s FROM App\Entity\Schedule s WHERE s.dispatch_time BETWEEN :date_from  AND  :date_to")
+            ->setParameters(['date_from' => $dateFrom, 'date_to' => $dateTo])
+            ->getResult();
     }
 }
