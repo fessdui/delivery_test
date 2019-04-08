@@ -130,39 +130,15 @@ class IndexController extends AbstractController
                 ->find($regionId);
 
             if ($region) {
-                /**
-                 * Задается время отправления в часовом поясе домашнего региона.
-                 */
-                $dateDeparture = new \DateTime($dateFromPost, new \DateTimeZone('GMT+3'));
-
                 /** @var ScheduleRepository $scheduleRepository */
                 $scheduleRepository = $this->getDoctrine()
                     ->getRepository(Schedule::class);
-
-                /* @todo Возможно для каждой записи нужно создать поле куда сохранять значение длительности поездки. Пока хардкод */
-                $tripDuration = 0;
-                $estimatedArrival = $scheduleRepository->getEstimatedTimeArrival($dateFromPost, $region);
-                $timeToInRegion = $scheduleRepository->getEstimatedTimeInRegion($dateFromPost, $region, $tripDuration);
-                $estimatedReturnTime = $scheduleRepository->getEstimatedTimeReturning($dateFromPost, $region, $tripDuration);
-
                 /** @var Courier $courier */
                 $courier = $this->getDoctrine()
                     ->getRepository(Courier::class)
                     ->find($courierId);
-                if ($courier) {
-                    /* @todo Добавить проверку что курьер может быть записан для этого заказа. */
-                    $schedule = new Schedule();
-                    $schedule
-                        ->setCourier($courier)
-                        ->setArrivalTime($estimatedArrival)
-                        ->setDispatchTime($dateDeparture)
-                        ->setEstimatedTimeStayTo($timeToInRegion)
-                        ->setEstimatedTimeComeBack($estimatedReturnTime)
-                        ->setRegion($region);
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($schedule);
-                    $entityManager->flush();
 
+                if ($scheduleRepository->saveSchedule($region,$dateFromPost, $courier)) {
                     $result['error'] = false;
                     $result['result'] = 'Запись успешно создана!';
                 } else {

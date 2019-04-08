@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Courier;
 use App\Entity\Region;
 use App\Entity\Schedule;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -73,5 +74,44 @@ class ScheduleRepository extends ServiceEntityRepository
         $dateTime->setTimezone(new \DateTimeZone('GMT+3'));
 
         return $dateTime;
+    }
+
+    /**
+     * Сохранить Расписание.
+     * @param Region $region
+     * @param $dateFromPost
+     * @param Courier $courier
+     * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function saveSchedule(Region $region, $dateFromPost, Courier $courier) {
+        $result = false;
+        /* @todo Возможно для каждой записи нужно создать поле куда сохранять значение длительности поездки. Пока хардкод */
+        $tripDuration = 0;
+        /**
+         * Задается время отправления в часовом поясе домашнего региона.
+         */
+        $dateDeparture = new \DateTime($dateFromPost, new \DateTimeZone('GMT+3'));
+        $estimatedArrival = $this->getEstimatedTimeArrival($dateFromPost, $region);
+        $timeToInRegion = $this->getEstimatedTimeInRegion($dateFromPost, $region, $tripDuration);
+        $estimatedReturnTime = $this->getEstimatedTimeReturning($dateFromPost, $region, $tripDuration);
+
+        if ($courier) {
+            $schedule = new Schedule();
+            $schedule
+                ->setCourier($courier)
+                ->setArrivalTime($estimatedArrival)
+                ->setDispatchTime($dateDeparture)
+                ->setEstimatedTimeStayTo($timeToInRegion)
+                ->setEstimatedTimeComeBack($estimatedReturnTime)
+                ->setRegion($region);
+            $this->getEntityManager()->persist($schedule);
+            $this->getEntityManager()->flush();
+
+            $result = true;
+        }
+
+        return $result;
     }
 }
