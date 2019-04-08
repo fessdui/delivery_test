@@ -5,3 +5,5 @@
 1) php bin/console doctrine:migrations:migrate
 2) php bin/console doctrine:fixtures:load
 
+Фапйл для наполнения таблицы с расписанием: src/DataFixtures/ScheduleFixtures.php
+
